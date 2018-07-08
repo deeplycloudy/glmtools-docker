@@ -1,0 +1,15 @@
+#### pip requirements.txt for glmtools dependencies ##
+# Assumes glmtools has been cloned from git separately, and the conda
+# environment specified by its environment.yml has been created and activated.
+# Therefore, these requirements don't install glmtools itself.
+####
+
+# pypi packages
+pyclipper
+
+# git sources without pypi packages
+git+https://github.com/deeplycloudy/stormdrain#egg=stormdrain
+git+https://github.com/deeplycloudy/lmatools#egg=lmatools
+
+
+
