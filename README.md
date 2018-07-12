@@ -15,7 +15,7 @@ To look around the glmtest image,
 
 ```bash
 # Start up an interactive shell, mounting the raw L2 and destination grid
-# directories on graupel to glm_raw_data and glm_grid_data in the container
+# directories on your local server (here, in /archive) to glm_raw_data and glm_grid_data in the container
 docker run -i -t \
   --mount 'type=bind,src=/archive/GLM/GLM-L2-LCFA_G16,dst=/glm_raw_data' \
   --mount 'type=bind,src=/archive/GLM/GLM-L2-GRID_G16,dst=/glm_grid_data' \
