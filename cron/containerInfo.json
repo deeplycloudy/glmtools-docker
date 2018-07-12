@@ -1,0 +1,24 @@
+{
+    "Image": "glmtest",
+    "Name": "processOneMinuteGLM",
+    "HostConfig": {
+        "Mounts":[
+            {
+                "Source":"/archive/GLM/GLM-L2-LCFA_G16",
+                "Target":"/glm_raw_data",
+                "Type":"bind",
+                "ReadOnly":false
+            },
+            {
+                "Source":"/archive/GLM/GLM-L2-GRID_G16",
+                "Target":"/glm_grid_data",
+                "Type":"bind",
+                "ReadOnly":false
+            }
+        ]
+    },
+    "Cmd": [
+        "/home/glm/aws_realtime/run.sh"
+    ]
+    
+}

@@ -1,5 +1,6 @@
 # Use the official Miniconda (Python 3) as the parent image
 FROM continuumio/miniconda3
+
 RUN conda update -n base conda
 
 # User glm does not exist yet.
@@ -16,6 +17,9 @@ COPY requirements.txt requirements.txt
 RUN git clone https://github.com/deeplycloudy/glmtools.git
 RUN conda env create -f glmtools/environment.yml
 
+# Copy the realtime processing applications
+COPY aws_realtime aws_realtime
+
 # Activate the glmval environment (using exec form that avoids nested shells)
 # and install glmtools and its supporting requirements into it.
 # The commented-out RUN commands below this aren't properly inheriting
@@ -24,7 +28,10 @@ RUN conda env create -f glmtools/environment.yml
 # Another example used run, but prepended each with a bin/bash and the activate command
 # That is in keeping with the Docker approach of stacking changes to the 
 # environment. Here, we just do it all at once.
-RUN ["/bin/bash", "-c", "source activate glmval && pip install -r requirements.txt && cd glmtools && python setup.py install"]
+RUN ["/bin/bash", "-c", \
+     "source activate glmval && pip install -r requirements.txt && \
+     cd glmtools && python setup.py install" \
+    ]
 
 # Install the support packages
 # RUN pip install -r requirements.txt
@@ -33,6 +40,7 @@ RUN ["/bin/bash", "-c", "source activate glmval && pip install -r requirements.t
 # WORKDIR $HOME/glmtools
 # RUN python setup.py install
 
-# How do we activate the environment upon starting the docker container?
-# Does this create everything as the glm user? I don't think we've 
-#  switched to that user.
+# glmtools uses lmatools which imports pyplot from matplotlib
+# so set the backend to non-interactive to avoid an import error
+ENV MPLBACKEND Agg
+
