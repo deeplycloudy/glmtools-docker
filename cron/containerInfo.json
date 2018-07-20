@@ -1,6 +1,6 @@
 {
-    "Image": "glmtest",
-    "Name": "processOneMinuteGLM",
+    "Image": "glmrelampago",
+    "Name": "processOneMinuteGLMrelampago",
     "HostConfig": {
         "Mounts":[
             {
@@ -10,7 +10,7 @@
                 "ReadOnly":false
             },
             {
-                "Source":"/archive/GLM/GLM-L2-GRID_G16",
+                "Source":"/archive/GLM/GLM-L2-GRIDRELAMPAGO_G16",
                 "Target":"/glm_grid_data",
                 "Type":"bind",
                 "ReadOnly":false

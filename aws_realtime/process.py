@@ -1,3 +1,4 @@
+import glob
 import sys, os
 import argparse
 from datetime import datetime, timedelta
@@ -19,8 +20,8 @@ def create_parser():
         help="Gridded data will be saved to this directory, in subdirectories" 
              "like /2018/Jul/04/")
     return parser
-
-def download(raw_dir):
+    
+def get_last_minute(minutes_to_try=5):
     # Fetch the previous minute of data. Get one minute ago, and then round down
     # to the nearest minute
     dt1min = timedelta(0, 60)
@@ -30,7 +31,12 @@ def download(raw_dir):
     enddate = startdate + dt1min
     
     # at most, wait a few minutes for the full minute to be available
-    dropdead = lastmin + dt1min*5
+    dropdead = lastmin + dt1min*minutes_to_try
+
+    return startdate, enddate, dropdead
+
+def download(raw_dir):
+    startdate, enddate, dropdead = get_last_minute()
     
     raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
     # grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
@@ -61,13 +67,46 @@ def download(raw_dir):
 
     return to_process
 
+def wait_for_local_data(raw_dir):
+    startdate, enddate, dropdead = get_last_minute()
+    raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
+
+    twentysec = timedelta(0, 20)
+    prod = GOESProduct(typ='GLM')
+
+    # Construct a pattern that will match the start time of each of the
+    # GLM files in this minute.
+    GLM_prods = [os.path.join(raw_path, prod.with_start_time(
+                    startdate + twentysec*ti) +'*.nc')
+                 for ti in range(3)]
+    print("Looking for ", GLM_prods)
+    while True:
+        to_process = []
+        for this_prod in GLM_prods:
+            to_process.extend(glob.glob(this_prod))
+        if len(to_process) >= 3:
+            # Should have three 20 s files in each minute
+            return to_process
+        elif datetime.now() > dropdead:
+            # Just process what we have.
+            return to_process
+        else:
+            # Keep waiting
+            print("Waiting for more local files; have", len(to_process))
+            sleep(2)
+            continue
+        # Use aws filename assembly infrastructure
+        return to_process
+        
 def main(args):
-    to_process = download(args.raw_dir)
+    # to_process = download(args.raw_dir)
+    to_process = wait_for_local_data(args.raw_dir)
+    print(to_process)
 
     grid_spec = ["--fixed_grid", "--split_events",
                 "--goes_position", "east", "--goes_sector", "meso",
                 "--dx=2.0", "--dy=2.0",
-                "--ctr_lat=33.5", "--ctr_lon=-101.5",
+                "--ctr_lat=-32.0", "--ctr_lon=-64.25",
                 ]
     cmd_args = ["-o", args.grid_dir] + grid_spec + to_process
 
