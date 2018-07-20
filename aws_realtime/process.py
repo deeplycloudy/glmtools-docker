@@ -19,7 +19,7 @@ def create_parser():
              "like /2018/Jul/04/")
     return parser
 
-def main(args):
+def download(raw_dir):
     # Fetch the previous minute of data. Get one minute ago, and then round down
     # to the nearest minute
     dt1min = timedelta(0, 60)
@@ -28,7 +28,7 @@ def main(args):
                           lastmin.hour, lastmin.minute)
     enddate = startdate + dt1min
         
-    raw_path = os.path.join(args.raw_dir, startdate.strftime('%Y/%b/%d'))
+    raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
     # grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
     if not os.path.exists(raw_path):
         os.makedirs(raw_path)
@@ -41,6 +41,11 @@ def main(args):
     for s3obj in GLM_prods:
         rawfile = save_s3_product(s3obj, raw_path)
         to_process.append(rawfile)
+
+    return to_process
+
+def main(args):
+    to_process = download(args.raw_dir)
 
     grid_spec = ["--fixed_grid", "--split_events",
                 "--goes_position", "east", "--goes_sector", "meso",
