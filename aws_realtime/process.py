@@ -1,6 +1,7 @@
 import sys, os
 import argparse
 from datetime import datetime, timedelta
+from time import sleep
 from aws_goes import (GOESArchiveDownloader, GOESProduct, 
 		      save_s3_product, netcdf_from_s3)
 
@@ -27,7 +28,10 @@ def download(raw_dir):
     startdate = datetime(lastmin.year, lastmin.month, lastmin.day, 
                           lastmin.hour, lastmin.minute)
     enddate = startdate + dt1min
-        
+    
+    # at most, wait a few minutes for the full minute to be available
+    dropdead = lastmin + dt1min*5
+    
     raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
     # grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
     if not os.path.exists(raw_path):
@@ -36,11 +40,24 @@ def download(raw_dir):
         # os.makedirs(grid_path)
 
     arc = GOESArchiveDownloader()
-    GLM_prods = arc.get_range(startdate, enddate, GOESProduct(typ='GLM'))
-    to_process = []
-    for s3obj in GLM_prods:
-        rawfile = save_s3_product(s3obj, raw_path)
-        to_process.append(rawfile)
+
+    while True:
+        to_process = []
+        GLM_prods = arc.get_range(startdate, enddate, GOESProduct(typ='GLM'))
+        for s3obj in GLM_prods:
+            rawfile = save_s3_product(s3obj, raw_path)
+            to_process.append(rawfile)
+        if len(to_process) >= 3:
+            # Should have three 20 s files in each minute
+            return to_process
+        elif datetime.now() > dropdead:
+            # Just process what we have.
+            return to_process
+        else:
+            # Keep waiting
+            print("Waiting for more files; have", len(to_process))
+            sleep(2)
+            continue
 
     return to_process
 

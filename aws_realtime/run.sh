@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # After an observation minute ends, the GLM data take some time to process
-# through the ground system. Wait some tens of seconds for this to complete.
+# through the ground system. This is typically at least 20 s. 
+
 # Assuming this script is kicked off at the start of each minute, and
 # process.py processes the previous minute, this logic should keep us as
 # current as possible.
 
-sleep 30s
+sleep 20s
 
 cd /home/glm/aws_realtime/
 cp /home/glm/glmtools/examples/grid/make_GLM_grids.py .
