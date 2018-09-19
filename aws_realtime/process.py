@@ -76,8 +76,8 @@ def wait_for_local_data(raw_dir):
 
     # Construct a pattern that will match the start time of each of the
     # GLM files in this minute.
-    GLM_prods = [os.path.join(raw_path, prod.with_start_time(
-                    startdate + twentysec*ti) +'*.nc')
+    GLM_prods = [os.path.join(raw_path, os.path.split(prod.with_start_time(
+                    startdate + twentysec*ti))[-1] +'*.nc')
                  for ti in range(3)]
     print("Looking for ", GLM_prods)
     while True:
@@ -104,7 +104,7 @@ def main(args):
     print(to_process)
 
     grid_spec = ["--fixed_grid", "--split_events",
-                "--goes_position", "east", "--goes_sector", "conus",
+                "--goes_position", "east", "--goes_sector", "meso",
                 "--dx=2.0", "--dy=2.0",
                 "--ctr_lat=-32.0", "--ctr_lon=-64.25",
                 ]
