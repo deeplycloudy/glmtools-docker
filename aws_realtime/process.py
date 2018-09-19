@@ -65,9 +65,9 @@ def main(args):
     to_process = download(args.raw_dir)
 
     grid_spec = ["--fixed_grid", "--split_events",
-                "--goes_position", "east", "--goes_sector", "meso",
+                "--goes_position", "east", "--goes_sector", "conus",
                 "--dx=2.0", "--dy=2.0",
-                "--ctr_lat=33.5", "--ctr_lon=-101.5",
+                # "--ctr_lat=33.5", "--ctr_lon=-101.5",
                 ]
     cmd_args = ["-o", args.grid_dir] + grid_spec + to_process
 
@@ -79,7 +79,8 @@ def main(args):
     from multiprocessing import freeze_support
     freeze_support()
     gridder, glm_filenames, start_time, end_time, grid_kwargs = grid_setup(grid_args)
-    gridder(glm_filenames, start_time, end_time, **grid_kwargs)
+    the_grid = gridder(glm_filenames, start_time, end_time, **grid_kwargs)
+    print(the_grid)
 
 if __name__ == '__main__':
     parser = create_parser()
