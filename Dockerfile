@@ -15,7 +15,21 @@ COPY requirements.txt requirements.txt
 
 # Clone glmtools and supporting libraries not available in conda
 RUN git clone https://github.com/deeplycloudy/glmtools.git
-RUN conda env create -f glmtools/environment.yml
+WORKDIR $HOME/glmtools
+RUN git checkout unifiedgridfile
+RUN conda env create -f environment.yml
+
+# Back to home after getting the right branch of glmtools
+WORKDIR $HOME
+
+# Install cron and copy in the crontab
+# RUN apt-get update && apt-get -y install cron
+# # Copy and give execution rights
+# ADD cron/crontab /etc/cron.d/glm-cron
+# RUN chmod 0644 /etc/cron.d/glm-cron
+# # Apply the cron job
+# RUN crontab /etc/cron.d/glm-cron
+# CMD service cron start
 
 # Copy the realtime processing applications
 COPY aws_realtime aws_realtime
