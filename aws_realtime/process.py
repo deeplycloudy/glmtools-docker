@@ -104,9 +104,10 @@ def main(args):
     print(to_process)
 
     grid_spec = ["--fixed_grid", "--split_events",
-                "--goes_position", "east", "--goes_sector", "meso",
+                "--goes_position", "east",
+		"--width=2000", "--height=2000",
                 "--dx=2.0", "--dy=2.0",
-                "--ctr_lat=-32.0", "--ctr_lon=-64.25",
+                "--ctr_lat=-29.0", "--ctr_lon=-64.0",
                 ]
     cmd_args = ["-o", args.grid_dir] + grid_spec + to_process
 
