@@ -74,7 +74,7 @@ def download(raw_dir):
             return to_process
         else:
             # Keep waiting
-            logger.DEBUG("Waiting for more files; have", len(to_process))
+            logger.DEBUG("Waiting for more files; have {0}", len(to_process))
             sleep(2)
             continue
 
@@ -92,7 +92,7 @@ def wait_for_local_data(raw_dir):
     GLM_prods = [os.path.join(raw_path, os.path.split(prod.with_start_time(
                     startdate + twentysec*ti))[-1] +'*.nc')
                  for ti in range(3)]
-    logger.info("Looking for ", GLM_prods)
+    logger.info("Looking for {0}", GLM_prods)
     while True:
         to_process = []
         for this_prod in GLM_prods:
@@ -105,7 +105,7 @@ def wait_for_local_data(raw_dir):
             return to_process
         else:
             # Keep waiting
-            logger.debug("Waiting for more local files; have", len(to_process))
+            logger.debug("Waiting for more local files; have {0}", len(to_process))
             sleep(2)
             continue
         # Use aws filename assembly infrastructure
@@ -152,7 +152,7 @@ def make_plots(gridfiles, outdir):
 def main(args):
     # to_process = download(args.raw_dir)
     to_process = wait_for_local_data(args.raw_dir)
-    logger.info("Processing ", to_process)
+    logger.info("Processing {0}", to_process)
 
     grid_spec = ["--fixed_grid", "--split_events",
                 "--goes_position", "east",
@@ -171,7 +171,7 @@ def main(args):
     freeze_support()
     gridder, glm_filenames, start_time, end_time, grid_kwargs = grid_setup(grid_args)
     the_grids = gridder(glm_filenames, start_time, end_time, **grid_kwargs)
-    logger.info("Created ", the_grids)
+    logger.info("Created {0}", the_grids)
     
     if args.plot_dir != '':
         make_plots(the_grids, args.plot_dir)
