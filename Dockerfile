@@ -19,6 +19,9 @@ WORKDIR $HOME/glmtools
 RUN git checkout unifiedgridfile
 RUN conda env create -f environment.yml
 
+# Only needed for plotting
+RUN conda install -c conda-forge cartopy
+
 # Back to home after getting the right branch of glmtools
 WORKDIR $HOME
 

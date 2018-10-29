@@ -5,6 +5,15 @@ from datetime import datetime, timedelta
 from time import sleep
 from aws_goes import (GOESArchiveDownloader, GOESProduct, 
 		      save_s3_product, netcdf_from_s3)
+import logging
+
+logger = logging.getLogger('glmtools-docker')
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+fh = logging.FileHandler('glmtools-docker.log')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 parse_desc = """ Create GLM grids fetched from the NOAA Big Data GOES bucket
 on AWS."""
@@ -15,6 +24,10 @@ def create_parser():
         required=True, dest='raw_dir', action='store',
         help="Raw L2 data will be saved to this directory, in subdirectories"
              "like /2018/Jul/04/")
+    parser.add_argument('-p', '--plot', metavar='directory',
+        required=False, dest='plot_dir', action='store', default='',
+        help="Plots of the gridded data will be saved to this directory,"
+             "in subdirectories like /2018/Jul/04/")
     parser.add_argument('-g', '--grid_dir', metavar='directory',
         required=True, dest='grid_dir', action='store',
         help="Gridded data will be saved to this directory, in subdirectories" 
@@ -61,7 +74,7 @@ def download(raw_dir):
             return to_process
         else:
             # Keep waiting
-            print("Waiting for more files; have", len(to_process))
+            logger.DEBUG("Waiting for more files; have", len(to_process))
             sleep(2)
             continue
 
@@ -79,7 +92,7 @@ def wait_for_local_data(raw_dir):
     GLM_prods = [os.path.join(raw_path, os.path.split(prod.with_start_time(
                     startdate + twentysec*ti))[-1] +'*.nc')
                  for ti in range(3)]
-    print("Looking for ", GLM_prods)
+    logger.info("Looking for ", GLM_prods)
     while True:
         to_process = []
         for this_prod in GLM_prods:
@@ -92,20 +105,58 @@ def wait_for_local_data(raw_dir):
             return to_process
         else:
             # Keep waiting
-            print("Waiting for more local files; have", len(to_process))
+            logger.debug("Waiting for more local files; have", len(to_process))
             sleep(2)
             continue
         # Use aws filename assembly infrastructure
         return to_process
+
+def make_plots(gridfiles, outdir):
+    import os
+    import matplotlib.pyplot as plt
+
+    from glmtools.io.imagery import open_glm_time_series
+
+    from plots import plot_glm
+
+    fields_6panel = ['flash_extent_density', 'average_flash_area','total_energy', 
+                     'group_extent_density', 'average_group_area', 'group_centroid_density']
+    
+    glm_grids = open_glm_time_series(gridfiles)
+
+    time_options = glm_grids.time.to_series()
+    time_options.sort_values(inplace=True)
+
+    fig = plt.figure(figsize=(18,12))
+    file_tag = 'fed_afa_toe_ged_aga_gcd'
+    images_out = []
+    for t in time_options:
+        plot_glm(fig, glm_grids, t, fields_6panel, subplots=(2,3))
+
+        outpath = os.path.join(outdir, '20%s' %(t.strftime('%y/%b/%d')))
+        if os.path.exists(outpath) == False:
+            os.makedirs(outpath)
+
+        # EOL field catalog convention
+        eol_template = 'satellite.GOES-16.{0}.GLM_{1}.png'
+        time_str = t.strftime('%Y%m%d%H%M')
+
+        png_name = eol_template.format(time_str, file_tag)
+        outfile=os.path.join(outpath, png_name)
+        outfile = outfile.replace(' ', '_')
+        outfile = outfile.replace(':', '')
+        images_out.append(outfile)
+        fig.savefig(outfile, facecolor='black', dpi=150)
+    
         
 def main(args):
     # to_process = download(args.raw_dir)
     to_process = wait_for_local_data(args.raw_dir)
-    print(to_process)
+    logger.info("Processing ", to_process)
 
     grid_spec = ["--fixed_grid", "--split_events",
                 "--goes_position", "east",
-		"--width=2000", "--height=2000",
+		        "--width=2000", "--height=2000",
                 "--dx=2.0", "--dy=2.0",
                 "--ctr_lat=-29.0", "--ctr_lon=-64.0",
                 ]
@@ -119,8 +170,11 @@ def main(args):
     from multiprocessing import freeze_support
     freeze_support()
     gridder, glm_filenames, start_time, end_time, grid_kwargs = grid_setup(grid_args)
-    the_grid = gridder(glm_filenames, start_time, end_time, **grid_kwargs)
-    print(the_grid)
+    the_grids = gridder(glm_filenames, start_time, end_time, **grid_kwargs)
+    logger.info("Created ", the_grids)
+    
+    if args.plot_dir != '':
+        make_plots(the_grids, args.plot_dir)
 
 if __name__ == '__main__':
     parser = create_parser()
