@@ -6,6 +6,7 @@ from time import sleep
 from aws_goes import (GOESArchiveDownloader, GOESProduct, 
 		      save_s3_product, netcdf_from_s3)
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
 # logger.setLevel(logging.DEBUG)
@@ -153,6 +154,7 @@ def make_plots(gridfiles, outdir):
         outfile = outfile.replace(':', '')
         images_out.append(outfile)
         fig.savefig(outfile, facecolor='black', dpi=150)
+    return images_out
     
         
 def main(args):
@@ -198,12 +200,21 @@ def main(args):
     dataset_name = "OR_GLM-L2-GLM{3}-{0}_{1}_s{2}*.nc".format(
         mode, platform, startdate.strftime('%Y%j%H%M%S0'), args.scene)
     expected_grid_full_path = os.path.join(grid_path, dataset_name)
-    logger.debug("Expecting grid {0}".format(expected_grid_full_path))
+    # logger.debug("Expecting grid {0}".format(expected_grid_full_path))
     expected_file = glob.glob(expected_grid_full_path)
     logger.debug("Expecting grid {0}".format(expected_file))
     
     if args.plot_dir != '':
-        make_plots(expected_file, args.plot_dir)
+        image_filenames = make_plots(expected_file, args.plot_dir)
+        eol = "ftp://catalog.eol.ucar.edu/pub/incoming/catalog/relampago/"
+        curl_template = "curl -T {0} {1}"
+        logger.debug("Preparing to upload image(s) to EOL ")
+        for imgf in image_filenames:
+            curl_cmd = curl_template.format(imgf, eol).split()
+            logger.debug("Curl cmd is {0}".format(curl_cmd))
+            output = subprocess.check_output(curl_cmd, stderr=subprocess.STDOUT)
+            logger.debug("{0}".format(output))
+            logger.info("Uploaded image {0} to EOL".format(imgf))
 
 if __name__ == '__main__':
     parser = create_parser()

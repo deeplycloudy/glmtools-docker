@@ -10,7 +10,7 @@ source activate glmval
 #   --mount type=bind,src=$GLMGRID,dst=/glm_grid_data \
 #   $GRIDCONTAINER /home/glm/aws_realtime/run.sh
 docker exec -d glm-conus /home/glm/aws_realtime/run.sh
-docker exec -d glm-relampago /home/glm/aws_realtime/run.sh
+docker exec -d glm-relampago /home/glm/aws_realtime/run_with_plots.sh
 
 # This command waits for files based on datetime.now(), so we want to ensure it
 # uses the same processing minute as the long-running GLM processing script.
