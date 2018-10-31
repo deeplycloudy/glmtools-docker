@@ -7,8 +7,8 @@ from aws_goes import (GOESArchiveDownloader, GOESProduct,
 		      save_s3_product, netcdf_from_s3)
 import logging
 
-logger = logging.getLogger('glmtools-docker')
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+# logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh = logging.FileHandler('glmtools-docker.log')
 fh.setLevel(logging.DEBUG)
@@ -32,6 +32,10 @@ def create_parser():
         required=True, dest='grid_dir', action='store',
         help="Gridded data will be saved to this directory, in subdirectories" 
              "like /2018/Jul/04/")
+    parser.add_argument('-c', '--scene', dest='scene', action='store',
+        default='C',
+        help="One of C, M1, M2, or F, matching the scene ID part of the"
+             " filename")
     return parser
     
 def get_last_minute(minutes_to_try=5):
@@ -74,7 +78,8 @@ def download(raw_dir):
             return to_process
         else:
             # Keep waiting
-            logger.DEBUG("Waiting for more files; have {0}", len(to_process))
+            logger.DEBUG("Waiting for more files; have {0}".format(
+                len(to_process)))
             sleep(2)
             continue
 
@@ -92,7 +97,7 @@ def wait_for_local_data(raw_dir):
     GLM_prods = [os.path.join(raw_path, os.path.split(prod.with_start_time(
                     startdate + twentysec*ti))[-1] +'*.nc')
                  for ti in range(3)]
-    logger.info("Looking for {0}", GLM_prods)
+    logger.info("Looking for {0}".format(GLM_prods))
     while True:
         to_process = []
         for this_prod in GLM_prods:
@@ -105,7 +110,8 @@ def wait_for_local_data(raw_dir):
             return to_process
         else:
             # Keep waiting
-            logger.debug("Waiting for more local files; have {0}", len(to_process))
+            logger.debug("Waiting for more local files; have {0}".format(
+                len(to_process)))
             sleep(2)
             continue
         # Use aws filename assembly infrastructure
@@ -152,7 +158,7 @@ def make_plots(gridfiles, outdir):
 def main(args):
     # to_process = download(args.raw_dir)
     to_process = wait_for_local_data(args.raw_dir)
-    logger.info("Processing {0}", to_process)
+    logger.info("Processing {0}".format(to_process))
 
     grid_spec = ["--fixed_grid", "--split_events",
                 "--goes_position", "east",
@@ -170,11 +176,34 @@ def main(args):
     from multiprocessing import freeze_support
     freeze_support()
     gridder, glm_filenames, start_time, end_time, grid_kwargs = grid_setup(grid_args)
+    logger.info("About to grid {0}".format(glm_filenames))
     the_grids = gridder(glm_filenames, start_time, end_time, **grid_kwargs)
-    logger.info("Created {0}", the_grids)
+    logger.info("Created {0}".format(the_grids))
+    
+    # Since the_grids is probably empty, due to some weird bug in glmtools,
+    # we will just go find the correct times from the files to_process.
+    # The above command only grids one minute at a time, so we just find the
+    # start time of the earliest file.
+    
+    from glmtools.io.glm import parse_glm_filename
+    raw_filenames = [os.path.split(fntp)[-1] for fntp in to_process]
+    starts = [parse_glm_filename(fntp)[3] for fntp in raw_filenames]
+    startdate = min(starts)
+    
+    mode='M3'
+    platform='G16'
+    grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
+    # "OR_GLM-L2-GLMC-M3_G16_s20181011100000_e20181011101000_c20181011124580.nc 
+    # Won't know file created time.
+    dataset_name = "OR_GLM-L2-GLM{3}-{0}_{1}_s{2}*.nc".format(
+        mode, platform, startdate.strftime('%Y%j%H%M%S0'), args.scene)
+    expected_grid_full_path = os.path.join(grid_path, dataset_name)
+    logger.debug("Expecting grid {0}".format(expected_grid_full_path))
+    expected_file = glob.glob(expected_grid_full_path)
+    logger.debug("Expecting grid {0}".format(expected_file))
     
     if args.plot_dir != '':
-        make_plots(the_grids, args.plot_dir)
+        make_plots(expected_file, args.plot_dir)
 
 if __name__ == '__main__':
     parser = create_parser()
