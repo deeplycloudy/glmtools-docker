@@ -13,11 +13,19 @@ WORKDIR $HOME
 # Add the requirements file from this distribution
 COPY requirements.txt requirements.txt
 
+RUN echo "it is changed"
 # Clone glmtools and supporting libraries not available in conda
 RUN git clone https://github.com/deeplycloudy/glmtools.git
 WORKDIR $HOME/glmtools
 RUN git checkout unifiedgridfile
 RUN conda env create -f environment.yml
+
+# Only needed for plotting; old version of matplotlib to preserve layout
+RUN ["/bin/bash", "-c", \
+     "source activate glmval && conda install -c conda-forge \
+     cartopy matplotlib=2.0.2" \
+    ]
+# RUN conda install -c conda-forge cartopy
 
 # Back to home after getting the right branch of glmtools
 WORKDIR $HOME
@@ -30,6 +38,14 @@ WORKDIR $HOME
 # # Apply the cron job
 # RUN crontab /etc/cron.d/glm-cron
 # CMD service cron start
+
+# If the code in glmtools is the only thing that changed, change the 
+# echo here to force glmtools to pull. This avoids a rebuild of the conda env.
+RUN echo "glmtools is new"
+WORKDIR $HOME/glmtools
+RUN git pull
+# Back to home after getting the current glmtools
+WORKDIR $HOME
 
 # Copy the realtime processing applications
 COPY aws_realtime aws_realtime
