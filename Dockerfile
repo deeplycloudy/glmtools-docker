@@ -20,9 +20,10 @@ WORKDIR $HOME/glmtools
 RUN git checkout unifiedgridfile
 RUN conda env create -f environment.yml
 
-# Only needed for plotting
+# Only needed for plotting; old version of matplotlib to preserve layout
 RUN ["/bin/bash", "-c", \
-     "source activate glmval && conda install -c conda-forge cartopy" \
+     "source activate glmval && conda install -c conda-forge \
+     cartopy matplotlib=2.0.2" \
     ]
 # RUN conda install -c conda-forge cartopy
 
