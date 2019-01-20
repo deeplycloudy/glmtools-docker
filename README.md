@@ -31,13 +31,6 @@ docker run -i -t \
   glmtest /home/glm/aws_realtime/run.sh
 ```
 
-There is also a docker-based cron service (not using the system cron) that can
-process GLM data on a regular schedule. It uses the
-https://github.com/camilin87/docker-cron image, as described here:
-https://www.tddapps.com/2017/02/18/how-to-run-any-container-on-a-schedule/
-
-See the the `README` in the cron directory for usage.
-
 ## Plot GLM data using this Docker container
 
 Make sure to add a line to your `docker run` command for the container to add
