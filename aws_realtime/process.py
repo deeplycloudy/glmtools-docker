@@ -190,7 +190,7 @@ def main(args):
     starts = [parse_glm_filename(fntp)[3] for fntp in raw_filenames]
     startdate = min(starts)
     
-    mode='M3'
+    mode='C'
     platform='G16'
     grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
     # "OR_GLM-L2-GLMC-M3_G16_s20181011100000_e20181011101000_c20181011124580.nc 
