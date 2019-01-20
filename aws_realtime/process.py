@@ -158,15 +158,13 @@ def make_plots(gridfiles, outdir):
     
         
 def main(args):
-    # to_process = download(args.raw_dir)
-    to_process = wait_for_local_data(args.raw_dir)
+    to_process = download(args.raw_dir)
+    # to_process = wait_for_local_data(args.raw_dir)
     logger.info("Processing {0}".format(to_process))
 
     grid_spec = ["--fixed_grid", "--split_events",
-                "--goes_position", "east",
-		        "--width=2000", "--height=2000",
+                "--goes_position", "east", "--goes_sector", "conus",
                 "--dx=2.0", "--dy=2.0",
-                "--ctr_lat=-29.0", "--ctr_lon=-64.0",
                 ]
     cmd_args = ["-o", args.grid_dir] + grid_spec + to_process
 
@@ -206,15 +204,15 @@ def main(args):
     
     if args.plot_dir != '':
         image_filenames = make_plots(expected_file, args.plot_dir)
-        eol = "ftp://catalog.eol.ucar.edu/pub/incoming/catalog/relampago/"
-        curl_template = "curl -T {0} {1}"
-        logger.debug("Preparing to upload image(s) to EOL ")
-        for imgf in image_filenames:
-            curl_cmd = curl_template.format(imgf, eol).split()
-            logger.debug("Curl cmd is {0}".format(curl_cmd))
-            output = subprocess.check_output(curl_cmd, stderr=subprocess.STDOUT)
-            logger.debug("{0}".format(output))
-            logger.info("Uploaded image {0} to EOL".format(imgf))
+        # eol = "ftp://catalog.eol.ucar.edu/pub/incoming/catalog/relampago/"
+        # curl_template = "curl -T {0} {1}"
+        # logger.debug("Preparing to upload image(s) to EOL ")
+        # for imgf in image_filenames:
+        #     curl_cmd = curl_template.format(imgf, eol).split()
+        #     logger.debug("Curl cmd is {0}".format(curl_cmd))
+        #     output = subprocess.check_output(curl_cmd, stderr=subprocess.STDOUT)
+        #     logger.debug("{0}".format(output))
+        #     logger.info("Uploaded image {0} to EOL".format(imgf))
 
 if __name__ == '__main__':
     parser = create_parser()
