@@ -79,7 +79,7 @@ def download(raw_dir):
             return to_process
         else:
             # Keep waiting
-            logger.DEBUG("Waiting for more files; have {0}".format(
+            logger.debug("Waiting for more files; have {0}".format(
                 len(to_process)))
             sleep(2)
             continue
