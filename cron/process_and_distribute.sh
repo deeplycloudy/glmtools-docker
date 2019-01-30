@@ -5,7 +5,7 @@
 GRIDCONTAINER=glm-conus
 LDMCONTAINER=ldm-prod
 
-source activate glmval
+# source activate glmval
 docker exec -d $GRIDCONTAINER /home/glm/aws_realtime/run_with_plots.sh
 
 # This command waits for files based on datetime.now(), so we want to ensure it

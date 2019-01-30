@@ -26,6 +26,10 @@ RUN ["/bin/bash", "-c", \
      cartopy matplotlib=2.0.2" \
     ]
 # RUN conda install -c conda-forge cartopy
+RUN ["/bin/bash", "-c", \
+     "source activate glmval && conda install -c conda-forge \
+     xarray=0.10.9" \
+    ]
 
 # Back to home after getting the right branch of glmtools
 WORKDIR $HOME
@@ -41,7 +45,7 @@ WORKDIR $HOME
 
 # If the code in glmtools is the only thing that changed, change the 
 # echo here to force glmtools to pull. This avoids a rebuild of the conda env.
-RUN echo "glmtools is new"
+RUN echo "glmtools is ready"
 WORKDIR $HOME/glmtools
 RUN git pull
 # Back to home after getting the current glmtools

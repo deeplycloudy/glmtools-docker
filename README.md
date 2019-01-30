@@ -41,6 +41,6 @@ YYYY/Mon/DD directory structure within this directory.
 docker run -i -t \
   --mount 'type=bind,src=/archive/GLM/GLM-L2-LCFA_G16,dst=/glm_raw_data' \
   --mount 'type=bind,src=/archive/GLM/GLM-L2-GRID_G16,dst=/glm_grid_data' \
-  --mount 'type=bind,src=/archive/GLM/GLM-L2-IMG_G16,dst=/glm_plots' \
+  --mount 'type=bind,src=/archive/GLM/GLM-L2-IMGSCONUS_G16,dst=/glm_plots' \
   glmtest /home/glm/aws_realtime/run_with_plots.sh
 ```
