@@ -14,4 +14,9 @@ docker exec -d $GRIDCONTAINER /home/glm/aws_realtime/run_with_plots.sh
 # run.sh in the glm gridding container waits 20s before running the gridding
 # script. This should start both scripts at about the same time.
 sleep 20
-docker exec -d $LDMCONTAINER python /home/ldm/ldm_insert.py -g /glm_grid_data
+docker exec -d  $LDMCONTAINER python /home/ldm/ldm_insert.py -g /glm_grid_data
+
+# Wait a bit of extra time for the full disk to finish processing since it
+# is started sequentially after the conus processing
+# sleep 10
+docker exec -d $LDMCONTAINER python /home/ldm/ldm_insert.py -g /glm_grid_data -c F

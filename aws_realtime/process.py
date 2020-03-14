@@ -31,12 +31,17 @@ def create_parser():
              "in subdirectories like /2018/Jul/04/")
     parser.add_argument('-g', '--grid_dir', metavar='directory',
         required=True, dest='grid_dir', action='store',
-        help="Gridded data will be saved to this directory, in subdirectories" 
-             "like /2018/Jul/04/")
+        default="{start_time:%Y/%b/%d}/{dataset_name}",
+        help="Gridded data will be saved to this directory, by default in" 
+             "subdirectories like /2018/Jul/04/")
     parser.add_argument('-c', '--scene', dest='scene', action='store',
         default='C',
         help="One of C, M1, M2, or F, matching the scene ID part of the"
              " filename")
+    parser.add_argument('-D', '--download', dest='should_download',
+        action='store_true',
+        help="Download data to raw_dir."
+             "  If not specified, await data in raw_dir.")
     return parser
     
 def get_last_minute(minutes_to_try=5):
@@ -158,12 +163,17 @@ def make_plots(gridfiles, outdir):
     
         
 def main(args):
-    to_process = download(args.raw_dir)
-    # to_process = wait_for_local_data(args.raw_dir)
+    if args.should_download:
+        logger.info("Downloading L2 LCFA data")
+        to_process = download(args.raw_dir)
+    else:
+        to_process = wait_for_local_data(args.raw_dir)
     logger.info("Processing {0}".format(to_process))
 
+    scene_code_names= {'C':'conus', 'F':'full'}
     grid_spec = ["--fixed_grid", "--split_events",
-                "--goes_position", "east", "--goes_sector", "conus",
+                "--goes_position", "east", "--goes_sector",
+                scene_code_names[args.scene],
                 "--dx=2.0", "--dy=2.0",
                 ]
     cmd_args = ["-o", args.grid_dir] + grid_spec + to_process

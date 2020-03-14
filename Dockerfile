@@ -1,5 +1,6 @@
 # Use the official Miniconda (Python 3) as the parent image
 FROM continuumio/miniconda3
+RUN echo "Please rebuild this"
 
 RUN conda update -n base conda
 
@@ -13,23 +14,22 @@ WORKDIR $HOME
 # Add the requirements file from this distribution
 COPY requirements.txt requirements.txt
 
-RUN echo "it is changed"
 # Clone glmtools and supporting libraries not available in conda
 RUN git clone https://github.com/deeplycloudy/glmtools.git
 WORKDIR $HOME/glmtools
-RUN git checkout unifiedgridfile
+
 RUN conda env create -f environment.yml
 
 # Only needed for plotting; old version of matplotlib to preserve layout
 RUN ["/bin/bash", "-c", \
      "source activate glmval && conda install -c conda-forge \
-     cartopy matplotlib=2.0.2" \
+     cartopy matplotlib=2.2" \
     ]
 # RUN conda install -c conda-forge cartopy
-RUN ["/bin/bash", "-c", \
-     "source activate glmval && conda install -c conda-forge \
-     xarray=0.10.9" \
-    ]
+# RUN ["/bin/bash", "-c", \
+#      "source activate glmval && conda install -c conda-forge \
+#      xarray=0.10.9" \
+#     ]
 
 # Back to home after getting the right branch of glmtools
 WORKDIR $HOME
@@ -45,7 +45,7 @@ WORKDIR $HOME
 
 # If the code in glmtools is the only thing that changed, change the 
 # echo here to force glmtools to pull. This avoids a rebuild of the conda env.
-RUN echo "glmtools is ready"
+RUN echo "glmtools is BRAND NEW"
 WORKDIR $HOME/glmtools
 RUN git pull
 # Back to home after getting the current glmtools
@@ -64,7 +64,7 @@ COPY aws_realtime aws_realtime
 # environment. Here, we just do it all at once.
 RUN ["/bin/bash", "-c", \
      "source activate glmval && pip install -r requirements.txt && \
-     cd glmtools && python setup.py install" \
+     cd glmtools && pip install -e ." \
     ]
 
 # Install the support packages
@@ -77,4 +77,3 @@ RUN ["/bin/bash", "-c", \
 # glmtools uses lmatools which imports pyplot from matplotlib
 # so set the backend to non-interactive to avoid an import error
 ENV MPLBACKEND Agg
-

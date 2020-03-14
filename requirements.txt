@@ -5,12 +5,12 @@
 ####
 
 # pypi packages
-pyclipper
+# pyclipper
 boto3
 
 # git sources without pypi packages
-git+https://github.com/deeplycloudy/stormdrain#egg=stormdrain
-git+https://github.com/deeplycloudy/lmatools#egg=lmatools
+# git+https://github.com/deeplycloudy/stormdrain#egg=stormdrain
+# git+https://github.com/deeplycloudy/lmatools#egg=lmatools
 
 
 
