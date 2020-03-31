@@ -25,16 +25,19 @@ def create_parser():
         required=True, dest='raw_dir', action='store',
         help="Raw L2 data will be saved to this directory, in subdirectories"
              "like /2018/Jul/04/")
+    parser.add_argument('-d', '--date', metavar='yyyy-mm-ddThh:mm:ss+zzzz',
+        required=True, dest='date', action='store',
+        help="Download data at this time")
     parser.add_argument('-s', '--satellite', metavar='GOES platform string',
         required=True, dest='satellite', action='store',
         help="goes16, goes17, etc.")
     return parser
     
-def get_last_minute(minutes_to_try=5):
+def get_last_minute(now, offset=60, minutes_to_try=5):
     # Fetch the previous minute of data. Get one minute ago, and then round down
     # to the nearest minute
-    dt1min = timedelta(0, 60)
-    lastmin = datetime.now() - dt1min
+    dt1min = timedelta(0, offset)
+    lastmin = now - dt1min
     startdate = datetime(lastmin.year, lastmin.month, lastmin.day, 
                           lastmin.hour, lastmin.minute)
     enddate = startdate + dt1min
@@ -44,8 +47,8 @@ def get_last_minute(minutes_to_try=5):
 
     return startdate, enddate, dropdead
 
-def download(raw_dir, satellite):
-    startdate, enddate, dropdead = get_last_minute()
+def download(raw_dir, satellite, date):
+    startdate, enddate, dropdead = get_last_minute(date, offset=0)
     
     raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
     # grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
@@ -80,8 +83,9 @@ def download(raw_dir, satellite):
     
         
 def main(args):
+    date = datetime.strptime(args.date, '%Y-%m-%dT%H:%M:%S%z')
     logger.info("Downloading L2 LCFA data")
-    to_process = download(args.raw_dir, args.satellite)
+    to_process = download(args.raw_dir, args.satellite, date)
     logger.info("Ready to process: {0}".format(to_process))
     
 

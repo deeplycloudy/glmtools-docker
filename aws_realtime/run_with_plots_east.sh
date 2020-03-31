@@ -16,8 +16,10 @@ cd /home/glm/aws_realtime/
 cp /home/glm/glmtools/examples/grid/make_GLM_grids.py .
 source activate glmval
 
-sleep 20s
+sleep 80s
+# 2020-03-14T17:15:50+0000
+DATE=`date -Iseconds`
 # Make the grids and make plots
-python download.py -w $LCFADIR -s $SATELLITE
-python process.py -w $LCFADIR -s $SATELLITE -g $GRIDDIR -p $PLOTDIR -c C
-python process.py -w $LCFADIR -s $SATELLITE -g $GRIDDIR -p $PLOTDIR -c F
+python download.py -w $LCFADIR -s $SATELLITE -d $DATE
+python process.py -w $LCFADIR -s $SATELLITE  -d $DATE -g $GRIDDIR -p $PLOTDIR -c C
+python process.py -w $LCFADIR -s $SATELLITE -d $DATE -g $GRIDDIR -p $PLOTDIR -c F
