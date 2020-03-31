@@ -25,6 +25,9 @@ def create_parser():
         required=True, dest='raw_dir', action='store',
         help="Raw L2 data will be saved to this directory, in subdirectories"
              "like /2018/Jul/04/")
+    parser.add_argument('-s', '--satellite', metavar='GOES platform string',
+        required=True, dest='satellite', action='store',
+        help="goes16, goes17, etc.")
     parser.add_argument('-p', '--plot', metavar='directory',
         required=False, dest='plot_dir', action='store', default='',
         help="Plots of the gridded data will be saved to this directory,"
@@ -38,10 +41,6 @@ def create_parser():
         default='C',
         help="One of C, M1, M2, or F, matching the scene ID part of the"
              " filename")
-    parser.add_argument('-D', '--download', dest='should_download',
-        action='store_true',
-        help="Download data to raw_dir."
-             "  If not specified, await data in raw_dir.")
     return parser
     
 def get_last_minute(minutes_to_try=5):
@@ -58,45 +57,13 @@ def get_last_minute(minutes_to_try=5):
 
     return startdate, enddate, dropdead
 
-def download(raw_dir):
-    startdate, enddate, dropdead = get_last_minute()
-    
-    raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
-    # grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
-    if not os.path.exists(raw_path):
-        os.makedirs(raw_path)
-    # if not os.path.exists(grid_path):
-        # os.makedirs(grid_path)
 
-    arc = GOESArchiveDownloader()
-
-    while True:
-        to_process = []
-        GLM_prods = arc.get_range(startdate, enddate, GOESProduct(typ='GLM'))
-        for s3obj in GLM_prods:
-            rawfile = save_s3_product(s3obj, raw_path)
-            to_process.append(rawfile)
-        if len(to_process) >= 3:
-            # Should have three 20 s files in each minute
-            return to_process
-        elif datetime.now() > dropdead:
-            # Just process what we have.
-            return to_process
-        else:
-            # Keep waiting
-            logger.debug("Waiting for more files; have {0}".format(
-                len(to_process)))
-            sleep(2)
-            continue
-
-    return to_process
-
-def wait_for_local_data(raw_dir):
+def wait_for_local_data(raw_dir, satellite):
     startdate, enddate, dropdead = get_last_minute()
     raw_path = os.path.join(raw_dir, startdate.strftime('%Y/%b/%d'))
 
     twentysec = timedelta(0, 20)
-    prod = GOESProduct(typ='GLM')
+    prod = GOESProduct(typ='GLM', satellite=satellite)
 
     # Construct a pattern that will match the start time of each of the
     # GLM files in this minute.
@@ -163,16 +130,16 @@ def make_plots(gridfiles, outdir):
     
         
 def main(args):
-    if args.should_download:
-        logger.info("Downloading L2 LCFA data")
-        to_process = download(args.raw_dir)
-    else:
-        to_process = wait_for_local_data(args.raw_dir)
+    to_process = wait_for_local_data(args.raw_dir, args.satellite)
     logger.info("Processing {0}".format(to_process))
 
     scene_code_names= {'C':'conus', 'F':'full'}
+    satellite_positions = {'goes16':'east', 'goes17':'west'}
+    satellite_platform_filename_code = {'goes16':'G16', 'goes17':'G17'}
     grid_spec = ["--fixed_grid", "--split_events",
-                "--goes_position", "east", "--goes_sector",
+                "--goes_position",
+                satellite_positions[args.satellite],
+                "--goes_sector",
                 scene_code_names[args.scene],
                 "--dx=2.0", "--dy=2.0",
                 ]
@@ -201,7 +168,7 @@ def main(args):
     startdate = min(starts)
     
     mode='M3'
-    platform='G16'
+    platform=satellite_platform_filename_code[args.satellite]
     grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
     # "OR_GLM-L2-GLMC-M3_G16_s20181011100000_e20181011101000_c20181011124580.nc 
     # Won't know file created time.
