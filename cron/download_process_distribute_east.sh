@@ -3,7 +3,7 @@
 # The containers below are assumed to be already started and running, with all
 # necessary paths mounted.
 PROCESSSCRIPT=/home/glm/aws_realtime/run_with_plots_east.sh
-GRIDCONTAINER=glm-prod-east
+GRIDCONTAINER=glm-16
 LDMCONTAINER=ldm-prod
 
 # source activate glmval
@@ -15,7 +15,7 @@ docker exec $GRIDCONTAINER $PROCESSSCRIPT
 # run.sh in the glm gridding container waits 20s before running the gridding
 # script. This should start both scripts at about the same time.
 # sleep 20
-docker exec -d  $LDMCONTAINER python /home/ldm/ldm_insert.py -g /glm_grid_data
+docker exec -d  $LDMCONTAINER python /home/ldm/ldm_insert.py -g /home/ldm/var/data/GLM-L2-GRID_G16
 
 # Wait a bit of extra time for the full disk to finish processing since it
 # is started sequentially after the conus processing
