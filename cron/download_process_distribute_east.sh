@@ -12,7 +12,7 @@ SATELLITE=goes16
 
 # The containers below are assumed to be already started and running, with all
 # necessary paths mounted. Paths are within the containers.
-PROCESSSCRIPT="/home/glm/aws_realtime/run_with_plots_east.sh $DATE $SATELLITE"
+PROCESSSCRIPT="/home/glm/aws_realtime/run_with_plots.sh $DATE $SATELLITE"
 GRIDCONTAINER=glm-16
 LDMCONTAINER=ldm-prod
 LDMGRIDDIR=/home/ldm/var/data/GLM-L2-GRID_G16
