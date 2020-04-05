@@ -109,7 +109,7 @@ def plot_glm(fig, glm_grids, tidx, fields, subplots=(2,3),
         #     glm = np.ma.array(glm, mask=(np.isnan(glm)))
         #     glm_alpha = .5 + glm_norm(glm)*0.5
         glm[np.isnan(glm)] = 0
-        glm_img = ax.imshow(glm, extent=(x.min(), x.max(), 
+        glm_img = ax.imshow(glm.data, extent=(x.min(), x.max(), 
                                y.min(), y.max()), origin='upper',
     #                            transform = ccrs.PlateCarree(),
                                cmap=glm_cmap, interpolation='nearest',

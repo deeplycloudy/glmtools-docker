@@ -99,7 +99,8 @@ def make_plots(gridfiles, outdir):
 
     from glmtools.io.imagery import open_glm_time_series
 
-    from plots import plot_glm
+    # from plots import plot_glm
+    from glmtools.plot.grid import plot_glm_grid
 
     fields_6panel = ['flash_extent_density', 'average_flash_area','total_energy', 
                      'group_extent_density', 'average_group_area', 'group_centroid_density']
@@ -109,11 +110,12 @@ def make_plots(gridfiles, outdir):
     time_options = glm_grids.time.to_series()
     time_options.sort_values(inplace=True)
 
-    fig = plt.figure(figsize=(18,12))
+    # For conus, a 3x2 panel plot is (2500*3),(1500*2), or a ratio of 2.5
+    fig = plt.figure(figsize=(25,10))
     file_tag = 'fed_afa_toe_ged_aga_gcd'
     images_out = []
     for t in time_options:
-        plot_glm(fig, glm_grids, t, fields_6panel, subplots=(2,3))
+        plot_glm_grid(fig, glm_grids, t, fields_6panel, subplots=(2,3))
 
         outpath = os.path.join(outdir, '20%s' %(t.strftime('%y/%b/%d')))
         if os.path.exists(outpath) == False:
@@ -173,13 +175,16 @@ def main(args):
     
     mode='M3'
     platform=satellite_platform_filename_code[args.satellite]
-    grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
+    
+    grid_path = args.grid_dir.replace('/{dataset_name}', '').format(start_time=startdate)
+    # grid_path = os.path.join(args.grid_dir, startdate.strftime('%Y/%b/%d'))
     # "OR_GLM-L2-GLMC-M3_G16_s20181011100000_e20181011101000_c20181011124580.nc 
     # Won't know file created time.
     dataset_name = "OR_GLM-L2-GLM{3}-{0}_{1}_s{2}*.nc".format(
         mode, platform, startdate.strftime('%Y%j%H%M%S0'), args.scene)
     expected_grid_full_path = os.path.join(grid_path, dataset_name)
     # logger.debug("Expecting grid {0}".format(expected_grid_full_path))
+    print(expected_grid_full_path)
     expected_file = glob.glob(expected_grid_full_path)
     logger.debug("Expecting grid {0}".format(expected_file))
     

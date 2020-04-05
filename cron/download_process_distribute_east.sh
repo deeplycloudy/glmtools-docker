@@ -8,10 +8,10 @@
 # 2020-03-14T17:15:50+00:00
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 SATELLITE=goes16
-sleep 80s
+# sleep 80s
 
 # The containers below are assumed to be already started and running, with all
-# necessary paths mounted.
+# necessary paths mounted. Paths are within the containers.
 PROCESSSCRIPT="/home/glm/aws_realtime/run_with_plots_east.sh $DATE $SATELLITE"
 GRIDCONTAINER=glm-16
 LDMCONTAINER=ldm-prod
