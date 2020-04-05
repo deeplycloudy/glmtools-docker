@@ -44,6 +44,9 @@ def create_parser():
         default='C',
         help="One of C, M1, M2, or F, matching the scene ID part of the"
              " filename")
+    parser.add_argument('-r', '--resolution', dest='resolution', action='store',
+        default=2.0, type=float,
+        help="2.0 or 4.0, the nominal pixel size in km")
     return parser
     
 def get_the_time(now, duration=60, minutes_to_try=5):
@@ -147,7 +150,8 @@ def main(args):
                 satellite_positions[args.satellite],
                 "--goes_sector",
                 scene_code_names[args.scene],
-                "--dx=2.0", "--dy=2.0",
+                "--dx={0:3.1f}".format(args.resolution), 
+                "--dy={0:3.1f}".format(args.resolution),
                 ]
     cmd_args = ["-o", args.grid_dir] + grid_spec + to_process
 

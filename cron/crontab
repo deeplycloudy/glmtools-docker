@@ -1,2 +1,3 @@
-* * * * * /home/ebruning/sources/glmtools-docker/cron/process_and_distribute.sh >> /var/log/cron-glm.log 2>&1
+* * * * * /home/ebruning/sources/glmtools-docker/cron/process_and_distribute_east.sh >> /var/log/cron-glm.log 2>&1
+* * * * * /home/ebruning/sources/glmtools-docker/cron/process_and_distribute_west.sh >> /var/log/cron-glm.log 2>&1
 # cron wants an empty line here

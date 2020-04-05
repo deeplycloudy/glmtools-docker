@@ -56,12 +56,14 @@ def download(raw_dir, satellite, date):
         os.makedirs(raw_path)
     # if not os.path.exists(grid_path):
         # os.makedirs(grid_path)
+        
+    buckets = {'goes16':'noaa-goes16', 'goes17':'noaa-goes17'}
 
-    arc = GOESArchiveDownloader()
+    arc = GOESArchiveDownloader(bucket=buckets[satellite])
 
     while True:
         to_process = []
-        prod = GOESProduct(typ='GLM', satetlite=satellite)
+        prod = GOESProduct(typ='GLM', satellite=satellite)
         GLM_prods = arc.get_range(startdate, enddate, prod)
         for s3obj in GLM_prods:
             rawfile = save_s3_product(s3obj, raw_path)

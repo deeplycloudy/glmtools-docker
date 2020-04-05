@@ -17,5 +17,5 @@ source activate glmval
 # Make the grids and make plots
 # sleep 80s
 python download.py -w $LCFADIR -s $SATELLITE -d $DATE
-python process.py -w $LCFADIR -s $SATELLITE  -d $DATE -g $GRIDDIR -c C -p $PLOTDIR
-# python process.py -w $LCFADIR -s $SATELLITE -d $DATE -g $GRIDDIR -c F
+python process.py -w $LCFADIR -s $SATELLITE  -d $DATE -g $GRIDDIR -c C -p $PLOTDIR -r 2
+python process.py -w $LCFADIR -s $SATELLITE -d $DATE -g $GRIDDIR -c F -r 4
