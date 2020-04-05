@@ -23,7 +23,7 @@ RUN conda env create -f environment.yml
 # Only needed for plotting; old version of matplotlib to preserve layout
 RUN ["/bin/bash", "-c", \
      "source activate glmval && conda install -c conda-forge \
-     cartopy matplotlib=2.2" \
+     cartopy matplotlib=2.2 dask" \
     ]
 # RUN conda install -c conda-forge cartopy
 # RUN ["/bin/bash", "-c", \
