@@ -8,7 +8,7 @@
 # 2020-03-14T17:15:50+00:00
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 SATELLITE=goes16
-# sleep 80s
+sleep 80s
 
 # The containers below are assumed to be already started and running, with all
 # necessary paths mounted. Paths are within the containers.
@@ -18,8 +18,10 @@ LDMCONTAINER=ldm-prod
 LDMGRIDDIR=/home/ldm/var/data/GLM-L2-GRID_G16
 
 # source activate glmval
-docker exec $GRIDCONTAINER $PROCESSSCRIPT
+timeout 2m docker exec $GRIDCONTAINER $PROCESSSCRIPT
 
-docker exec $LDMCONTAINER python /home/ldm/ldm_insert.py -d $DATE -g $LDMGRIDDIR -c C -s $SATELLITE
-# docker exec $LDMCONTAINER python /home/ldm/ldm_insert.py -d $DATE -g $LDMGRIDDIR -c F -s $SATELLITE
+dockerconus="docker exec $LDMCONTAINER python3 /home/ldm/ldm_insert.py -d $DATE -g $LDMGRIDDIR -c C -s $SATELLITE"
+dockerfull="docker exec $LDMCONTAINER python3 /home/ldm/ldm_insert.py -d $DATE -g $LDMGRIDDIR -c F -s $SATELLITE"
 
+/home/ec2-user/sources/glmtools-docker/cron/rsync_to_graupel_east.sh
+ssh -p 2388 ebruning@localhost "$dockerconus && $dockerfull"
